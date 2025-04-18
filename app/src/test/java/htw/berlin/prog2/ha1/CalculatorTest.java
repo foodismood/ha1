@@ -119,10 +119,8 @@ class CalculatorTest {
         String expected = "Error";
         String actual = calc.readScreen();
         assertEquals(expected,actual);
-
-
-
     }
+
 
 }
 

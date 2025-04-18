@@ -118,14 +118,28 @@ public class Calculator {
      * und das Ergebnis direkt angezeigt.
      */
     public void pressEqualsKey() {
-        var result = switch(latestOperation) {
-            case "+" -> latestValue + Double.parseDouble(screen);
-            case "-" -> latestValue - Double.parseDouble(screen);
-            case "x" -> latestValue * Double.parseDouble(screen);
-            case "/" -> latestValue / Double.parseDouble(screen);
-            default -> throw new IllegalArgumentException();
+        double ergebnis;
+        switch(latestOperation) {
+            case "+":
+                ergebnis = latestValue + Double.parseDouble(screen);
+                break;
+            case "-":
+                ergebnis = latestValue - Double.parseDouble(screen);
+                break;
+            case "x":
+                ergebnis = latestValue * Double.parseDouble(screen);
+                break;
+            case "/":
+                double teiler = Double.parseDouble(screen);
+                if (teiler == 0){ //Wir prüfen ob der Wert schon vorher null daher die If bedingung
+                    screen = "Error";
+                    return;
+                }
+                ergebnis = latestValue / teiler; //falls wert teilbar ist wird hier geteilt
+                break;
+            default: throw new IllegalArgumentException();
         };
-        screen = Double.toString(result);
+        screen = Double.toString(ergebnis);
         if(screen.equals("Infinity")) screen = "Error";
         if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
         if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
