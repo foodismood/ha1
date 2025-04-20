@@ -12,7 +12,11 @@ public class Calculator {
 
     private double latestValue;
 
+    private double zweiterValue;
+
     private String latestOperation = "";
+
+    private String punktvorStrichOperartor = "";
 
     /**
      * @return den aktuellen Bildschirminhalt als String
@@ -60,8 +64,84 @@ public class Calculator {
      * @param operation "+" für Addition, "-" für Substraktion, "x" für Multiplikation, "/" für Division
      */
     public void pressBinaryOperationKey(String operation)  {
-        latestValue = Double.parseDouble(screen);
+        double aktuellerWert = Double.parseDouble(screen); //Wir wollen einmal den aktuellen Wert haben für Punkt vor Strich rechnung
+
+
+
+        if (latestOperation == null || latestOperation.equals("")){
+            latestValue = aktuellerWert;
+            latestOperation = operation;
+            screen = "0";
+            return;
+        }
+
+        if ((latestOperation.equals("+") || latestOperation.equals("-")) && (operation.equals("x") || operation.equals("/"))){
+            punktvorStrichOperartor = operation; //Speicherung für die Punktrechnung
+            zweiterValue = aktuellerWert;
+            screen = "0";
+            return;
+        }
+        //Wenn wir eine Punktrechnung gespeichert haben wird dies hier ausgeführt
+        if (!punktvorStrichOperartor.equals("")){
+            switch (punktvorStrichOperartor){
+                case "x":
+                    aktuellerWert = zweiterValue * aktuellerWert;
+                    break;
+                case "/":
+                    if (aktuellerWert == 0){
+                        screen = "Error";
+                        latestOperation = "";
+                        punktvorStrichOperartor = "";
+                        return;
+                    }
+                    aktuellerWert = zweiterValue / aktuellerWert;
+                    break;
+            }
+            punktvorStrichOperartor = "";
+            zweiterValue = 0;
+
+        }
+        //Wenn Punktrechnung nicht nötig wird regulär gerechnet
+        switch (latestOperation){
+            case "+":
+                latestValue += aktuellerWert;
+                break;
+            case "-":
+                latestValue -= aktuellerWert;
+                break;
+            case "x":
+                latestValue *= aktuellerWert;
+                break;
+            case "/":
+                if (aktuellerWert == 0){
+                    screen = "Error";
+                    latestOperation = null;
+                    return;
+                }
+                latestValue /= aktuellerWert;
+        }
+
+        /**
+         * alter Code nicht beachten alte ansätze
+         * if (zweiterValue != 0 && (latestOperation.equals("x") || latestOperation.equals("/"))){
+         *             if (latestOperation.equals("x")){
+         *                 latestValue *= zweiterValue;
+         *             } else if (latestOperation.equals("/")) {
+         *                 if (zweiterValue == 0){
+         *                     screen = "Error";
+         *                     latestOperation = null;
+         *                     return;
+         *                 }
+         *                 latestValue /= zweiterValue;
+         *             }
+         *
+         *         }
+         */
+
         latestOperation = operation;
+        screen = "0";
+
+
     }
 
     /**
@@ -118,28 +198,49 @@ public class Calculator {
      * und das Ergebnis direkt angezeigt.
      */
     public void pressEqualsKey() {
-        double ergebnis;
+        double aktuellerWert = Double.parseDouble(screen);
+        // Punkt vor Strich Rechnung
+        if (!punktvorStrichOperartor.equals("")){
+            switch (punktvorStrichOperartor){
+                case "x":
+                    aktuellerWert = zweiterValue * aktuellerWert; //Wenn * gespeichert wird dieser als erstes berechnet
+                    break;
+                case "/":
+                    if (aktuellerWert == 0){ //wir prüfen ob durch null geteilt wird
+                        screen = "Error";
+                        return;
+                    }
+                    aktuellerWert = zweiterValue / aktuellerWert; //Division
+                    break;
+            }
+            punktvorStrichOperartor = ""; //zurücksetzen nach der Punktrechnung
+            zweiterValue = 0;
+        }
+        double ergebnis = 0;
         switch(latestOperation) {
             case "+":
-                ergebnis = latestValue + Double.parseDouble(screen);
+                ergebnis = latestValue + aktuellerWert;
                 break;
             case "-":
-                ergebnis = latestValue - Double.parseDouble(screen);
+                ergebnis = latestValue - aktuellerWert;
                 break;
             case "x":
-                ergebnis = latestValue * Double.parseDouble(screen);
+                ergebnis = latestValue * aktuellerWert;
                 break;
             case "/":
-                double teiler = Double.parseDouble(screen);
-                if (teiler == 0){ //Wir prüfen ob der Wert schon vorher null daher die If bedingung
+                if (aktuellerWert == 0){ //Wir prüfen ob der Wert schon vorher null daher die If bedingung
                     screen = "Error";
                     return;
                 }
-                ergebnis = latestValue / teiler; //falls wert teilbar ist wird hier geteilt
+                ergebnis = latestValue / aktuellerWert; //falls wert teilbar ist wird hier geteilt
                 break;
-            default: throw new IllegalArgumentException();
+            default:
+                return;
         };
         screen = Double.toString(ergebnis);
+        latestValue = ergebnis;
+        latestOperation = "";
+
         if(screen.equals("Infinity")) screen = "Error";
         if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
         if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
